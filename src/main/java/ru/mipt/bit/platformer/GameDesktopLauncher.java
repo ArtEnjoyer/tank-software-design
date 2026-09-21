@@ -6,31 +6,25 @@ import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Application;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3ApplicationConfiguration;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import ru.mipt.bit.platformer.control.KeyboardDirectionInput;
-import ru.mipt.bit.platformer.game.Level;
 
 import static com.badlogic.gdx.graphics.GL20.GL_COLOR_BUFFER_BIT;
 
 public class GameDesktopLauncher implements ApplicationListener {
 
     private Batch batch;
-    private Level level;
-    private KeyboardDirectionInput playerInput;
+    private Game game;
 
     @Override
     public void create() {
         batch = new SpriteBatch();
-        level = new Level(batch);
-        playerInput = new KeyboardDirectionInput(Gdx.input);
+        game = new GameFactory().createGame(batch, Gdx.input);
     }
 
     @Override
     public void render() {
         clearScreen();
-
-        playerInput.getPressedDirection().ifPresent(level::movePlayer);
-        level.update(Gdx.graphics.getDeltaTime());
-        level.render(batch);
+        game.update(Gdx.graphics.getDeltaTime());
+        game.render();
     }
 
     @Override
@@ -51,7 +45,7 @@ public class GameDesktopLauncher implements ApplicationListener {
     @Override
     public void dispose() {
         // dispose of all the native resources (classes which implement com.badlogic.gdx.utils.Disposable)
-        level.dispose();
+        game.dispose();
         batch.dispose();
     }
 
