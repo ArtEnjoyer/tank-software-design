@@ -2,14 +2,14 @@ package ru.mipt.bit.platformer.graphics;
 
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
-import ru.mipt.bit.platformer.model.Tree;
+import ru.mipt.bit.platformer.model.GameObject;
 
-public class TreeGraphics extends GameObjectGraphics {
+public class StaticObjectGraphics extends GameObjectGraphics {
 
     private static final float NO_ROTATION = 0f;
 
-    public TreeGraphics(Tree tree, String texturePath, TiledMapTileLayer groundLayer) {
-        super(texturePath, tree.getCoordinates(), groundLayer);
+    public StaticObjectGraphics(GameObject object, String texturePath, TiledMapTileLayer groundLayer) {
+        super(texturePath, object.getCoordinates(), groundLayer);
     }
 
     @Override

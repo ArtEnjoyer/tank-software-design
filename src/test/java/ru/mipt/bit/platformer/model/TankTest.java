@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class TankTest {
@@ -18,14 +19,16 @@ class TankTest {
 
     @BeforeEach
     void createTank() {
-        tank = new Tank(new GridPoint2(1, 1));
+        tank = new Tank(new GridPoint2(1, 1), Direction.RIGHT, TIME_TO_PASS_A_TILE);
     }
 
     @Test
-    void standsStillAndLooksRightWhenCreated() {
-        assertEquals(new GridPoint2(1, 1), tank.getCoordinates());
-        assertEquals(Direction.RIGHT, tank.getDirection());
-        assertFalse(tank.isMoving());
+    void standsStillAndLooksToGivenDirectionWhenCreated() {
+        Tank tankLookingDown = new Tank(new GridPoint2(1, 1), Direction.DOWN, TIME_TO_PASS_A_TILE);
+
+        assertEquals(new GridPoint2(1, 1), tankLookingDown.getCoordinates());
+        assertEquals(Direction.DOWN, tankLookingDown.getDirection());
+        assertFalse(tankLookingDown.isMoving());
     }
 
     @Test
@@ -46,6 +49,23 @@ class TankTest {
         assertEquals(new GridPoint2(1, 2), tank.getDestinationCoordinates());
         assertEquals(0.5f, tank.getMovementProgress(), 1e-6f);
         assertTrue(tank.isMoving());
+    }
+
+    @Test
+    void movesWithTheSpeedGivenAtCreation() {
+        Tank slowTank = new Tank(new GridPoint2(1, 1), Direction.RIGHT, 2f);
+
+        slowTank.move(Direction.UP, FREE_FIELD);
+        slowTank.update(1f);
+
+        assertEquals(0.5f, slowTank.getMovementProgress(), 1e-6f);
+        assertEquals(new GridPoint2(1, 1), slowTank.getCoordinates());
+    }
+
+    @Test
+    void cannotBeCreatedWithNonPositiveSpeed() {
+        assertThrows(IllegalArgumentException.class, () -> new Tank(new GridPoint2(1, 1), Direction.RIGHT, 0f));
+        assertThrows(IllegalArgumentException.class, () -> new Tank(new GridPoint2(1, 1), Direction.RIGHT, -1f));
     }
 
     @Test

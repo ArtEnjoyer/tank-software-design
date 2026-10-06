@@ -1,10 +1,7 @@
-package ru.mipt.bit.platformer.control;
+package ru.mipt.bit.platformer.model;
 
 import com.badlogic.gdx.math.GridPoint2;
 import org.junit.jupiter.api.Test;
-import ru.mipt.bit.platformer.model.Direction;
-import ru.mipt.bit.platformer.model.GameField;
-import ru.mipt.bit.platformer.model.Tank;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -15,10 +12,10 @@ class MoveCommandTest {
     private static final GameField FREE_FIELD = coordinates -> true;
     private static final GameField OCCUPIED_FIELD = coordinates -> false;
 
-    private final Tank tank = new Tank(new GridPoint2(1, 1));
+    private final Tank tank = new Tank(new GridPoint2(1, 1), Direction.RIGHT, TIME_TO_PASS_A_TILE);
 
     @Test
-    void sendsTankToTheGivenDirection() {
+    void sendsObjectToTheGivenDirection() {
         new MoveCommand(tank, Direction.LEFT, FREE_FIELD).execute();
         tank.update(TIME_TO_PASS_A_TILE);
 
@@ -26,7 +23,7 @@ class MoveCommandTest {
     }
 
     @Test
-    void turnsTankEvenWhenTargetTileIsOccupied() {
+    void turnsObjectEvenWhenTargetTileIsOccupied() {
         new MoveCommand(tank, Direction.DOWN, OCCUPIED_FIELD).execute();
 
         assertEquals(Direction.DOWN, tank.getDirection());

@@ -1,6 +1,7 @@
-package ru.mipt.bit.platformer.control;
+package ru.mipt.bit.platformer.input;
 
 import org.junit.jupiter.api.Test;
+import ru.mipt.bit.platformer.Command;
 
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -14,7 +15,7 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.singletonMap;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-class KeyboardInputHandlerTest {
+class KeyboardInputControllerTest {
 
     private static class CountingCommand implements Command {
 
@@ -34,9 +35,9 @@ class KeyboardInputHandlerTest {
     @Test
     void executesCommandBoundToPressedKey() {
         CountingCommand command = new CountingCommand();
-        KeyboardInputHandler handler = new KeyboardInputHandler(pressed(UP), singletonMap(UP, command));
+        KeyboardInputController controller = new KeyboardInputController(pressed(UP), singletonMap(UP, command));
 
-        handler.handleInput();
+        controller.handleInput();
 
         assertEquals(1, command.executions);
     }
@@ -44,9 +45,9 @@ class KeyboardInputHandlerTest {
     @Test
     void doesNothingWhileKeyIsNotPressed() {
         CountingCommand command = new CountingCommand();
-        KeyboardInputHandler handler = new KeyboardInputHandler(pressed(), singletonMap(UP, command));
+        KeyboardInputController controller = new KeyboardInputController(pressed(), singletonMap(UP, command));
 
-        handler.handleInput();
+        controller.handleInput();
 
         assertEquals(0, command.executions);
     }
@@ -54,9 +55,9 @@ class KeyboardInputHandlerTest {
     @Test
     void ignoresPressedKeysWithoutBinding() {
         CountingCommand command = new CountingCommand();
-        KeyboardInputHandler handler = new KeyboardInputHandler(pressed(SPACE), singletonMap(UP, command));
+        KeyboardInputController controller = new KeyboardInputController(pressed(SPACE), singletonMap(UP, command));
 
-        handler.handleInput();
+        controller.handleInput();
 
         assertEquals(0, command.executions);
     }
@@ -68,9 +69,9 @@ class KeyboardInputHandlerTest {
         Map<Integer, Command> bindings = new LinkedHashMap<>();
         bindings.put(UP, move);
         bindings.put(SPACE, shoot);
-        KeyboardInputHandler handler = new KeyboardInputHandler(pressed(UP, SPACE), bindings);
+        KeyboardInputController controller = new KeyboardInputController(pressed(UP, SPACE), bindings);
 
-        handler.handleInput();
+        controller.handleInput();
 
         assertEquals(1, move.executions);
         assertEquals(1, shoot.executions);
@@ -82,21 +83,21 @@ class KeyboardInputHandlerTest {
         Map<Integer, Command> bindings = new LinkedHashMap<>();
         bindings.put(UP, move);
         bindings.put(W, move);
-        KeyboardInputHandler handler = new KeyboardInputHandler(pressed(W), bindings);
+        KeyboardInputController controller = new KeyboardInputController(pressed(W), bindings);
 
-        handler.handleInput();
+        controller.handleInput();
 
         assertEquals(1, move.executions);
     }
 
     @Test
-    void bindingsCannotBeChangedAfterHandlerIsCreated() {
+    void bindingsCannotBeChangedAfterControllerIsCreated() {
         CountingCommand added = new CountingCommand();
         Map<Integer, Command> bindings = new LinkedHashMap<>();
-        KeyboardInputHandler handler = new KeyboardInputHandler(pressed(SPACE), bindings);
+        KeyboardInputController controller = new KeyboardInputController(pressed(SPACE), bindings);
 
         bindings.put(SPACE, added);
-        handler.handleInput();
+        controller.handleInput();
 
         assertEquals(0, added.executions);
     }
