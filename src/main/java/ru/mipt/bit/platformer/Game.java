@@ -1,33 +1,27 @@
 package ru.mipt.bit.platformer;
 
-import com.badlogic.gdx.utils.Disposable;
-import ru.mipt.bit.platformer.control.KeyboardInputHandler;
-import ru.mipt.bit.platformer.graphics.LevelGraphics;
-import ru.mipt.bit.platformer.model.Level;
+public class Game {
 
-public class Game implements Disposable {
+    private final InputController inputController;
+    private final Updatable world;
+    private final Renderer renderer;
 
-    private final Level level;
-    private final LevelGraphics levelGraphics;
-    private final KeyboardInputHandler inputHandler;
-
-    public Game(Level level, LevelGraphics levelGraphics, KeyboardInputHandler inputHandler) {
-        this.level = level;
-        this.levelGraphics = levelGraphics;
-        this.inputHandler = inputHandler;
+    public Game(InputController inputController, Updatable world, Renderer renderer) {
+        this.inputController = inputController;
+        this.world = world;
+        this.renderer = renderer;
     }
 
     public void update(float deltaTime) {
-        inputHandler.handleInput();
-        level.update(deltaTime);
+        inputController.handleInput();
+        world.update(deltaTime);
     }
 
     public void render() {
-        levelGraphics.render();
+        renderer.render();
     }
 
-    @Override
     public void dispose() {
-        levelGraphics.dispose();
+        renderer.dispose();
     }
 }

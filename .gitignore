@@ -2,7 +2,6 @@
 **/build/
 !src/**/build/
 
-# Output of the VS Code / Eclipse Java tooling
 bin/
 .classpath
 .project
