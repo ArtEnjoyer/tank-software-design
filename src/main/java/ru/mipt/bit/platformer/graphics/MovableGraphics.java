@@ -1,5 +1,6 @@
 package ru.mipt.bit.platformer.graphics;
 
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import ru.mipt.bit.platformer.model.Movable;
@@ -10,8 +11,8 @@ public class MovableGraphics extends GameObjectGraphics {
     private final Movable movable;
     private final TileMovement tileMovement;
 
-    public MovableGraphics(Movable movable, String texturePath, TiledMapTileLayer groundLayer, TileMovement tileMovement) {
-        super(texturePath, movable.getCoordinates(), groundLayer);
+    public MovableGraphics(Movable movable, Texture texture, TiledMapTileLayer groundLayer, TileMovement tileMovement) {
+        super(texture, movable.getCoordinates(), groundLayer);
         this.movable = movable;
         this.tileMovement = tileMovement;
     }

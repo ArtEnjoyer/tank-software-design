@@ -14,20 +14,13 @@ import static ru.mipt.bit.platformer.util.GdxGameUtils.moveRectangleAtTileCenter
 
 public abstract class GameObjectGraphics implements Renderable {
 
-    private final Texture texture;
     private final TextureRegion region;
     private final Rectangle rectangle;
 
-    protected GameObjectGraphics(String texturePath, GridPoint2 coordinates, TiledMapTileLayer groundLayer) {
-        this.texture = new Texture(texturePath);
+    protected GameObjectGraphics(Texture texture, GridPoint2 coordinates, TiledMapTileLayer groundLayer) {
         this.region = new TextureRegion(texture);
         this.rectangle = createBoundingRectangle(region);
         moveRectangleAtTileCenter(groundLayer, rectangle, coordinates);
-    }
-
-    @Override
-    public void dispose() {
-        texture.dispose();
     }
 
     protected final void draw(Batch batch, float rotation) {
