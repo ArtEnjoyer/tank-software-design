@@ -13,12 +13,14 @@ public class LevelGraphics implements Renderer {
     private final TiledMap tiledMap;
     private final MapRenderer tiledMapRenderer;
     private final Batch batch;
+    private final Textures textures;
     private final List<Renderable> objects = new ArrayList<>();
 
-    public LevelGraphics(TiledMap tiledMap, MapRenderer tiledMapRenderer, Batch batch) {
+    public LevelGraphics(TiledMap tiledMap, MapRenderer tiledMapRenderer, Batch batch, Textures textures) {
         this.tiledMap = tiledMap;
         this.tiledMapRenderer = tiledMapRenderer;
         this.batch = batch;
+        this.textures = textures;
     }
 
     public void add(Renderable object) {
@@ -38,9 +40,7 @@ public class LevelGraphics implements Renderer {
 
     @Override
     public void dispose() {
-        for (Renderable object : objects) {
-            object.dispose();
-        }
+        textures.dispose();
         tiledMap.dispose();
     }
 }

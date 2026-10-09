@@ -13,6 +13,9 @@ import ru.mipt.bit.platformer.InputController;
 import ru.mipt.bit.platformer.graphics.LevelGraphics;
 import ru.mipt.bit.platformer.graphics.MovableGraphics;
 import ru.mipt.bit.platformer.graphics.StaticObjectGraphics;
+import ru.mipt.bit.platformer.graphics.Textures;
+import ru.mipt.bit.platformer.level.LevelGenerator;
+import ru.mipt.bit.platformer.level.LevelLayout;
 import ru.mipt.bit.platformer.input.KeyboardInputController;
 import ru.mipt.bit.platformer.input.keyboard.GdxKeyboard;
 import ru.mipt.bit.platformer.model.Direction;
@@ -44,26 +47,34 @@ public class GameFactory {
     private static final String TANK_TEXTURE = "images/tank_blue.png";
     private static final String TREE_TEXTURE = "images/greenTree.png";
 
-    private static final GridPoint2 PLAYER_START = new GridPoint2(1, 1);
     private static final Direction PLAYER_START_DIRECTION = Direction.RIGHT;
     private static final float TANK_SECONDS_PER_TILE = 0.4f;
-    private static final GridPoint2 TREE_PLACE = new GridPoint2(1, 3);
+
+    private final LevelGenerator levelGenerator;
+
+    public GameFactory(LevelGenerator levelGenerator) {
+        this.levelGenerator = levelGenerator;
+    }
 
     public Game createGame(Batch batch, Input input) {
         TiledMap tiledMap = new TmxMapLoader().load(LEVEL_MAP);
         TiledMapTileLayer groundLayer = getSingleLayer(tiledMap);
         TileMovement tileMovement = new TileMovement(groundLayer, Interpolation.smooth);
+        LevelLayout layout = levelGenerator.generate(groundLayer.getWidth(), groundLayer.getHeight());
 
+        Textures textures = new Textures();
         Level level = new Level();
-        LevelGraphics levelGraphics = new LevelGraphics(tiledMap, createSingleLayerMapRenderer(tiledMap, batch), batch);
+        LevelGraphics levelGraphics = new LevelGraphics(tiledMap, createSingleLayerMapRenderer(tiledMap, batch), batch, textures);
 
-        Tank player = new Tank(PLAYER_START, PLAYER_START_DIRECTION, TANK_SECONDS_PER_TILE);
+        Tank player = new Tank(layout.getPlayerStart(), PLAYER_START_DIRECTION, TANK_SECONDS_PER_TILE);
         level.add(player);
-        levelGraphics.add(new MovableGraphics(player, TANK_TEXTURE, groundLayer, tileMovement));
+        levelGraphics.add(new MovableGraphics(player, textures.get(TANK_TEXTURE), groundLayer, tileMovement));
 
-        Tree tree = new Tree(TREE_PLACE);
-        level.add(tree);
-        levelGraphics.add(new StaticObjectGraphics(tree, TREE_TEXTURE, groundLayer));
+        for (GridPoint2 treeCoordinates : layout.getTreeCoordinates()) {
+            Tree tree = new Tree(treeCoordinates);
+            level.add(tree);
+            levelGraphics.add(new StaticObjectGraphics(tree, textures.get(TREE_TEXTURE), groundLayer));
+        }
 
         InputController inputController = new KeyboardInputController(new GdxKeyboard(input), playerBindings(player, level));
 
