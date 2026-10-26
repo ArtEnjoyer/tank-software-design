@@ -1,0 +1,22 @@
+package ru.mipt.bit.platformer.model;
+
+import com.badlogic.gdx.math.GridPoint2;
+
+public class Tree implements GameObject {
+
+    private final GridPoint2 coordinates;
+
+    public Tree(GridPoint2 coordinates) {
+        this.coordinates = new GridPoint2(coordinates);
+    }
+
+    @Override
+    public boolean occupies(GridPoint2 tileCoordinates) {
+        return coordinates.equals(tileCoordinates);
+    }
+
+    @Override
+    public GridPoint2 getCoordinates() {
+        return new GridPoint2(coordinates);
+    }
+}
