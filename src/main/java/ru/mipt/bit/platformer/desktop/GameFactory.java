@@ -9,26 +9,27 @@ import com.badlogic.gdx.math.GridPoint2;
 import com.badlogic.gdx.math.Interpolation;
 import ru.mipt.bit.platformer.Command;
 import ru.mipt.bit.platformer.Game;
-import ru.mipt.bit.platformer.InputController;
+import ru.mipt.bit.platformer.ai.RandomAiController;
 import ru.mipt.bit.platformer.graphics.LevelGraphics;
-import ru.mipt.bit.platformer.graphics.MovableGraphics;
-import ru.mipt.bit.platformer.graphics.StaticObjectGraphics;
 import ru.mipt.bit.platformer.graphics.Textures;
-import ru.mipt.bit.platformer.level.LevelGenerator;
-import ru.mipt.bit.platformer.level.LevelLayout;
+import ru.mipt.bit.platformer.input.CompositeInputController;
 import ru.mipt.bit.platformer.input.KeyboardInputController;
 import ru.mipt.bit.platformer.input.keyboard.GdxKeyboard;
+import ru.mipt.bit.platformer.level.LevelGenerator;
+import ru.mipt.bit.platformer.level.LevelLayout;
 import ru.mipt.bit.platformer.model.Direction;
 import ru.mipt.bit.platformer.model.GameField;
 import ru.mipt.bit.platformer.model.Level;
 import ru.mipt.bit.platformer.model.MoveCommand;
 import ru.mipt.bit.platformer.model.Movable;
 import ru.mipt.bit.platformer.model.Tank;
-import ru.mipt.bit.platformer.model.Tree;
 import ru.mipt.bit.platformer.util.TileMovement;
 
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Random;
 
 import static com.badlogic.gdx.Input.Keys.A;
 import static com.badlogic.gdx.Input.Keys.D;
@@ -44,41 +45,46 @@ import static ru.mipt.bit.platformer.util.GdxGameUtils.getSingleLayer;
 public class GameFactory {
 
     private static final String LEVEL_MAP = "level.tmx";
-    private static final String TANK_TEXTURE = "images/tank_blue.png";
-    private static final String TREE_TEXTURE = "images/greenTree.png";
 
-    private static final Direction PLAYER_START_DIRECTION = Direction.RIGHT;
-    private static final float TANK_SECONDS_PER_TILE = 0.4f;
+    private static final Direction TANK_START_DIRECTION = Direction.RIGHT;
+    private static final float PLAYER_SECONDS_PER_TILE = 0.4f;
+    private static final float ENEMY_SECONDS_PER_TILE = 0.6f;
 
     private final LevelGenerator levelGenerator;
+    private final Random random;
 
-    public GameFactory(LevelGenerator levelGenerator) {
+    public GameFactory(LevelGenerator levelGenerator, Random random) {
         this.levelGenerator = levelGenerator;
+        this.random = random;
     }
 
     public Game createGame(Batch batch, Input input) {
         TiledMap tiledMap = new TmxMapLoader().load(LEVEL_MAP);
         TiledMapTileLayer groundLayer = getSingleLayer(tiledMap);
         TileMovement tileMovement = new TileMovement(groundLayer, Interpolation.smooth);
-        LevelLayout layout = levelGenerator.generate(groundLayer.getWidth(), groundLayer.getHeight());
+        int fieldWidth = groundLayer.getWidth();
+        int fieldHeight = groundLayer.getHeight();
+        LevelLayout layout = levelGenerator.generate(fieldWidth, fieldHeight);
 
         Textures textures = new Textures();
-        Level level = new Level();
+        Level level = new Level(fieldWidth, fieldHeight);
         LevelGraphics levelGraphics = new LevelGraphics(tiledMap, createSingleLayerMapRenderer(tiledMap, batch), batch, textures);
+        GameObjectSpawner spawner = new GameObjectSpawner(level, levelGraphics, textures, groundLayer, tileMovement);
+        CompositeInputController controllers = new CompositeInputController();
 
-        Tank player = new Tank(layout.getPlayerStart(), PLAYER_START_DIRECTION, TANK_SECONDS_PER_TILE);
-        level.add(player);
-        levelGraphics.add(new MovableGraphics(player, textures.get(TANK_TEXTURE), groundLayer, tileMovement));
+        Tank player = spawner.spawnTank(layout.getPlayerStart(), TANK_START_DIRECTION, PLAYER_SECONDS_PER_TILE);
+        controllers.add(new KeyboardInputController(new GdxKeyboard(input), playerBindings(player, level)));
 
-        for (GridPoint2 treeCoordinates : layout.getTreeCoordinates()) {
-            Tree tree = new Tree(treeCoordinates);
-            level.add(tree);
-            levelGraphics.add(new StaticObjectGraphics(tree, textures.get(TREE_TEXTURE), groundLayer));
+        for (GridPoint2 coordinates : layout.getEnemyTankCoordinates()) {
+            Tank enemy = spawner.spawnTank(coordinates, TANK_START_DIRECTION, ENEMY_SECONDS_PER_TILE);
+            controllers.add(new RandomAiController(moveCommands(enemy, level), random));
         }
 
-        InputController inputController = new KeyboardInputController(new GdxKeyboard(input), playerBindings(player, level));
+        for (GridPoint2 coordinates : layout.getTreeCoordinates()) {
+            spawner.spawnTree(coordinates);
+        }
 
-        return new Game(inputController, level, levelGraphics);
+        return new Game(controllers, level, levelGraphics);
     }
 
     private Map<Integer, Command> playerBindings(Movable player, GameField field) {
@@ -94,5 +100,13 @@ public class GameFactory {
         for (int key : keys) {
             bindings.put(key, command);
         }
+    }
+
+    private List<Command> moveCommands(Movable movable, GameField field) {
+        List<Command> commands = new ArrayList<>();
+        for (Direction direction : Direction.values()) {
+            commands.add(new MoveCommand(movable, direction, field));
+        }
+        return commands;
     }
 }

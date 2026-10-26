@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class LevelTest {
@@ -55,7 +56,10 @@ class LevelTest {
         }
     }
 
-    private final Level level = new Level();
+    private static final int WIDTH = 10;
+    private static final int HEIGHT = 8;
+
+    private final Level level = new Level(WIDTH, HEIGHT);
 
     private static Tank tankAt(int x, int y) {
         return new Tank(new GridPoint2(x, y), Direction.RIGHT, TIME_TO_PASS_A_TILE);
@@ -164,5 +168,82 @@ class LevelTest {
 
         assertEquals(new GridPoint2(1, 2), first.getCoordinates());
         assertEquals(new GridPoint2(4, 5), second.getCoordinates());
+    }
+
+    @Test
+    void tilesOutsideTheLevelAreNeverFree() {
+        assertFalse(level.isFree(new GridPoint2(-1, 0)));
+        assertFalse(level.isFree(new GridPoint2(0, -1)));
+        assertFalse(level.isFree(new GridPoint2(WIDTH, 0)));
+        assertFalse(level.isFree(new GridPoint2(0, HEIGHT)));
+        assertTrue(level.isFree(new GridPoint2(WIDTH - 1, HEIGHT - 1)));
+    }
+
+    @Test
+    void tankStopsAtTheBorderLikeAtAnObstacle() {
+        Tank tank = tankAt(0, 0);
+        level.add(tank);
+
+        tank.move(Direction.LEFT, level);
+        level.update(TIME_TO_PASS_A_TILE);
+        tank.move(Direction.DOWN, level);
+        level.update(TIME_TO_PASS_A_TILE);
+
+        assertEquals(new GridPoint2(0, 0), tank.getCoordinates());
+        assertEquals(Direction.DOWN, tank.getDirection());
+    }
+
+    @Test
+    void tankStopsAtTheFarBorders() {
+        Tank tank = tankAt(WIDTH - 1, HEIGHT - 1);
+        level.add(tank);
+
+        tank.move(Direction.RIGHT, level);
+        level.update(TIME_TO_PASS_A_TILE);
+        tank.move(Direction.UP, level);
+        level.update(TIME_TO_PASS_A_TILE);
+
+        assertEquals(new GridPoint2(WIDTH - 1, HEIGHT - 1), tank.getCoordinates());
+    }
+
+    @Test
+    void movingTankKeepsBothItsTilesForItself() {
+        Tank mover = tankAt(1, 1);
+        Tank fromBehind = tankAt(0, 1);
+        Tank fromAhead = tankAt(3, 1);
+        level.add(mover);
+        level.add(fromBehind);
+        level.add(fromAhead);
+
+        mover.move(Direction.RIGHT, level);
+        level.update(TIME_TO_PASS_A_TILE / 2);
+        fromBehind.move(Direction.RIGHT, level);
+        fromAhead.move(Direction.LEFT, level);
+        level.update(TIME_TO_PASS_A_TILE / 4);
+
+        assertFalse(fromBehind.isMoving());
+        assertFalse(fromAhead.isMoving());
+        assertEquals(new GridPoint2(0, 1), fromBehind.getCoordinates());
+        assertEquals(new GridPoint2(3, 1), fromAhead.getCoordinates());
+    }
+
+    @Test
+    void twoTanksCannotStartMovingIntoTheSameTile() {
+        Tank left = tankAt(0, 1);
+        Tank right = tankAt(2, 1);
+        level.add(left);
+        level.add(right);
+
+        left.move(Direction.RIGHT, level);
+        right.move(Direction.LEFT, level);
+
+        assertTrue(left.isMoving());
+        assertFalse(right.isMoving());
+    }
+
+    @Test
+    void cannotBeCreatedWithNonPositiveSize() {
+        assertThrows(IllegalArgumentException.class, () -> new Level(0, 8));
+        assertThrows(IllegalArgumentException.class, () -> new Level(10, -1));
     }
 }
