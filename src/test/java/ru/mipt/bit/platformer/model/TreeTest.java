@@ -25,6 +25,13 @@ class TreeTest {
     }
 
     @Test
+    void cannotBeDestroyed() {
+        tree.takeDamage(1000);
+
+        assertTrue(tree.isAlive());
+    }
+
+    @Test
     void doesNotLetOutsideCodeSpoilItsCoordinates() {
         GridPoint2 coordinates = tree.getCoordinates();
         coordinates.set(7, 7);

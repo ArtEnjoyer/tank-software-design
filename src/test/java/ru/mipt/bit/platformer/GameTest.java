@@ -25,16 +25,28 @@ class GameTest {
         }
     };
 
-    private final Game game = new Game(
-            () -> calls.add("input"),
-            deltaTime -> calls.add("update " + deltaTime),
-            renderer);
+    private final InputController inputController = () -> {
+        calls.add("create commands");
+        return asList(() -> calls.add("execute move"), () -> calls.add("execute shoot"));
+    };
+
+    private final Game game = new Game(inputController, deltaTime -> calls.add("update " + deltaTime), renderer);
 
     @Test
-    void handlesInputBeforeUpdatingTheWorld() {
+    void createsCommandsThenExecutesThemThenUpdatesTheWorld() {
         game.update(0.5f);
 
-        assertEquals(asList("input", "update 0.5"), calls);
+        assertEquals(asList("create commands", "execute move", "execute shoot", "update 0.5"), calls);
+    }
+
+    @Test
+    void createsAndExecutesCommandsOncePerTurn() {
+        game.update(0.1f);
+        game.update(0.2f);
+
+        assertEquals(asList(
+                "create commands", "execute move", "execute shoot", "update 0.1",
+                "create commands", "execute move", "execute shoot", "update 0.2"), calls);
     }
 
     @Test

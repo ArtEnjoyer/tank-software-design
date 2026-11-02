@@ -1,6 +1,8 @@
 package ru.mipt.bit.platformer;
 
+import java.util.List;
+
 public interface InputController {
 
-    void handleInput();
+    List<Command> createCommands();
 }

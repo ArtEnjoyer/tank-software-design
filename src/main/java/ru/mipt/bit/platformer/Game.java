@@ -1,5 +1,7 @@
 package ru.mipt.bit.platformer;
 
+import java.util.List;
+
 public class Game {
 
     private final InputController inputController;
@@ -13,7 +15,10 @@ public class Game {
     }
 
     public void update(float deltaTime) {
-        inputController.handleInput();
+        List<Command> commands = inputController.createCommands();
+        for (Command command : commands) {
+            command.execute();
+        }
         world.update(deltaTime);
     }
 

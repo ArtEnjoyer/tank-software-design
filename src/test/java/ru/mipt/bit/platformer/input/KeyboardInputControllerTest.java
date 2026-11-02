@@ -12,8 +12,10 @@ import static com.badlogic.gdx.Input.Keys.SPACE;
 import static com.badlogic.gdx.Input.Keys.UP;
 import static com.badlogic.gdx.Input.Keys.W;
 import static java.util.Arrays.asList;
+import static java.util.Collections.singletonList;
 import static java.util.Collections.singletonMap;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class KeyboardInputControllerTest {
 
@@ -33,48 +35,47 @@ class KeyboardInputControllerTest {
     }
 
     @Test
-    void executesCommandBoundToPressedKey() {
+    void createsCommandBoundToPressedKey() {
         CountingCommand command = new CountingCommand();
         KeyboardInputController controller = new KeyboardInputController(pressed(UP), singletonMap(UP, command));
 
-        controller.handleInput();
-
-        assertEquals(1, command.executions);
+        assertEquals(singletonList(command), controller.createCommands());
     }
 
     @Test
-    void doesNothingWhileKeyIsNotPressed() {
+    void onlyCreatesCommandsWithoutExecutingThem() {
         CountingCommand command = new CountingCommand();
-        KeyboardInputController controller = new KeyboardInputController(pressed(), singletonMap(UP, command));
+        KeyboardInputController controller = new KeyboardInputController(pressed(UP), singletonMap(UP, command));
 
-        controller.handleInput();
+        controller.createCommands();
 
         assertEquals(0, command.executions);
+    }
+
+    @Test
+    void createsNothingWhileKeyIsNotPressed() {
+        KeyboardInputController controller = new KeyboardInputController(pressed(), singletonMap(UP, new CountingCommand()));
+
+        assertTrue(controller.createCommands().isEmpty());
     }
 
     @Test
     void ignoresPressedKeysWithoutBinding() {
-        CountingCommand command = new CountingCommand();
-        KeyboardInputController controller = new KeyboardInputController(pressed(SPACE), singletonMap(UP, command));
+        KeyboardInputController controller = new KeyboardInputController(pressed(SPACE), singletonMap(UP, new CountingCommand()));
 
-        controller.handleInput();
-
-        assertEquals(0, command.executions);
+        assertTrue(controller.createCommands().isEmpty());
     }
 
     @Test
-    void executesEveryCommandWhoseKeyIsPressed() {
-        CountingCommand move = new CountingCommand();
+    void createsEveryCommandWhoseKeyIsPressedInBindingOrder() {
         CountingCommand shoot = new CountingCommand();
+        CountingCommand move = new CountingCommand();
         Map<Integer, Command> bindings = new LinkedHashMap<>();
-        bindings.put(UP, move);
         bindings.put(SPACE, shoot);
+        bindings.put(UP, move);
         KeyboardInputController controller = new KeyboardInputController(pressed(UP, SPACE), bindings);
 
-        controller.handleInput();
-
-        assertEquals(1, move.executions);
-        assertEquals(1, shoot.executions);
+        assertEquals(asList(shoot, move), controller.createCommands());
     }
 
     @Test
@@ -85,20 +86,16 @@ class KeyboardInputControllerTest {
         bindings.put(W, move);
         KeyboardInputController controller = new KeyboardInputController(pressed(W), bindings);
 
-        controller.handleInput();
-
-        assertEquals(1, move.executions);
+        assertEquals(singletonList(move), controller.createCommands());
     }
 
     @Test
     void bindingsCannotBeChangedAfterControllerIsCreated() {
-        CountingCommand added = new CountingCommand();
         Map<Integer, Command> bindings = new LinkedHashMap<>();
         KeyboardInputController controller = new KeyboardInputController(pressed(SPACE), bindings);
 
-        bindings.put(SPACE, added);
-        controller.handleInput();
+        bindings.put(SPACE, new CountingCommand());
 
-        assertEquals(0, added.executions);
+        assertTrue(controller.createCommands().isEmpty());
     }
 }

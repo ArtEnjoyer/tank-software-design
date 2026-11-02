@@ -5,6 +5,7 @@ import ru.mipt.bit.platformer.InputController;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 
@@ -22,7 +23,7 @@ public class RandomAiController implements InputController {
     }
 
     @Override
-    public void handleInput() {
-        commands.get(random.nextInt(commands.size())).execute();
+    public List<Command> createCommands() {
+        return Collections.singletonList(commands.get(random.nextInt(commands.size())));
     }
 }
