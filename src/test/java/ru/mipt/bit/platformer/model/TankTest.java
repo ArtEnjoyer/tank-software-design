@@ -144,6 +144,33 @@ class TankTest {
     }
 
     @Test
+    void remembersItsInitialHealthAsMaximum() {
+        Tank weakTank = new Tank(new GridPoint2(1, 1), Direction.RIGHT, TIME_TO_PASS_A_TILE, 80, readyGun());
+
+        weakTank.takeDamage(20);
+
+        assertEquals(80, weakTank.getMaxHealth());
+        assertEquals(60, weakTank.getHealth());
+        assertEquals(0.75f, weakTank.getHealthFraction(), 1e-6f);
+    }
+
+    @Test
+    void healthFractionShowsHowMuchIsLeft() {
+        assertEquals(1f, tank.getHealthFraction(), 1e-6f);
+
+        tank.takeDamage(BULLET_DAMAGE);
+
+        assertEquals((float) (HEALTH - BULLET_DAMAGE) / HEALTH, tank.getHealthFraction(), 1e-6f);
+    }
+
+    @Test
+    void healthFractionIsZeroForDestroyedTank() {
+        tank.takeDamage(HEALTH + 30);
+
+        assertEquals(0f, tank.getHealthFraction(), 1e-6f);
+    }
+
+    @Test
     void isDestroyedWhenHealthIsOver() {
         tank.takeDamage(HEALTH);
 
