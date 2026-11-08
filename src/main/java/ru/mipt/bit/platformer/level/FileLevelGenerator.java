@@ -20,12 +20,12 @@ public class FileLevelGenerator implements LevelGenerator {
 
     @Override
     public LevelLayout generate(int fieldWidth, int fieldHeight) {
-        LevelLayout layout = parser.parse(readLines());
-        if (layout.getWidth() > fieldWidth || layout.getHeight() > fieldHeight) {
-            throw new IllegalArgumentException("Level " + levelFile + " of size " + layout.getWidth() + "x" + layout.getHeight()
+        LevelLayout fileLayout = parser.parse(readLines());
+        if (fileLayout.getWidth() > fieldWidth || fileLayout.getHeight() > fieldHeight) {
+            throw new IllegalArgumentException("Level " + levelFile + " of size " + fileLayout.getWidth() + "x" + fileLayout.getHeight()
                     + " does not fit into field " + fieldWidth + "x" + fieldHeight);
         }
-        return layout;
+        return new LevelLayout(fieldWidth, fieldHeight, fileLayout.getPlayerStart(), fileLayout.getTreeCoordinates());
     }
 
     private List<String> readLines() {

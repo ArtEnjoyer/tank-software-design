@@ -10,6 +10,7 @@ import ru.mipt.bit.platformer.Game;
 import ru.mipt.bit.platformer.level.FileLevelGenerator;
 import ru.mipt.bit.platformer.level.LevelGenerator;
 import ru.mipt.bit.platformer.level.RandomLevelGenerator;
+import ru.mipt.bit.platformer.level.RandomTanksLevelGenerator;
 
 import java.util.Random;
 
@@ -20,19 +21,22 @@ public class GameDesktopLauncher implements ApplicationListener {
     private static final String LEVEL_FILE = "level.txt";
     private static final String RANDOM_MODE = "random";
     private static final int RANDOM_TREE_COUNT = 12;
+    private static final int ENEMY_TANK_COUNT = 3;
 
     private final LevelGenerator levelGenerator;
+    private final Random random;
     private Batch batch;
     private Game game;
 
-    public GameDesktopLauncher(LevelGenerator levelGenerator) {
+    public GameDesktopLauncher(LevelGenerator levelGenerator, Random random) {
         this.levelGenerator = levelGenerator;
+        this.random = random;
     }
 
     @Override
     public void create() {
         batch = new SpriteBatch();
-        game = new GameFactory(levelGenerator).createGame(batch, Gdx.input);
+        game = new GameFactory(levelGenerator, random).createGame(batch, Gdx.input);
     }
 
     @Override
@@ -73,13 +77,14 @@ public class GameDesktopLauncher implements ApplicationListener {
         Lwjgl3ApplicationConfiguration config = new Lwjgl3ApplicationConfiguration();
         // level width: 10 tiles x 128px, height: 8 tiles x 128px
         config.setWindowedMode(1280, 1024);
-        new Lwjgl3Application(new GameDesktopLauncher(createGenerator(args)), config);
+        Random random = new Random();
+        new Lwjgl3Application(new GameDesktopLauncher(createGenerator(args, random), random), config);
     }
 
-    private static LevelGenerator createGenerator(String[] args) {
-        if (args.length > 0 && RANDOM_MODE.equals(args[0])) {
-            return new RandomLevelGenerator(RANDOM_TREE_COUNT, new Random());
-        }
-        return new FileLevelGenerator(LEVEL_FILE);
+    private static LevelGenerator createGenerator(String[] args, Random random) {
+        LevelGenerator obstaclesGenerator = args.length > 0 && RANDOM_MODE.equals(args[0])
+                ? new RandomLevelGenerator(RANDOM_TREE_COUNT, random)
+                : new FileLevelGenerator(LEVEL_FILE);
+        return new RandomTanksLevelGenerator(obstaclesGenerator, ENEMY_TANK_COUNT, random);
     }
 }

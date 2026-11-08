@@ -13,8 +13,19 @@ class FileLevelGeneratorTest {
     void readsTheAssignmentExampleFromResources() {
         LevelLayout layout = new FileLevelGenerator("level.txt").generate(10, 8);
 
-        assertEquals(10, layout.getWidth());
-        assertEquals(6, layout.getHeight());
+        assertEquals(new GridPoint2(5, 1), layout.getPlayerStart());
+        assertEquals(15, layout.getTreeCoordinates().size());
+        assertTrue(layout.getTreeCoordinates().contains(new GridPoint2(3, 5)));
+        assertTrue(layout.getTreeCoordinates().contains(new GridPoint2(9, 2)));
+        assertTrue(layout.getEnemyTankCoordinates().isEmpty());
+    }
+
+    @Test
+    void placesFileLevelAtTheBottomOfTheWholeField() {
+        LevelLayout layout = new FileLevelGenerator("level.txt").generate(12, 9);
+
+        assertEquals(12, layout.getWidth());
+        assertEquals(9, layout.getHeight());
         assertEquals(new GridPoint2(5, 1), layout.getPlayerStart());
         assertEquals(15, layout.getTreeCoordinates().size());
         assertTrue(layout.getTreeCoordinates().contains(new GridPoint2(3, 5)));

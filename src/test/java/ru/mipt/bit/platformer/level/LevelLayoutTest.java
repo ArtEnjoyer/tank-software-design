@@ -8,6 +8,7 @@ import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class LevelLayoutTest {
 
@@ -53,5 +54,53 @@ class LevelLayoutTest {
     void rejectsTreeOnPlayerStart() {
         assertThrows(IllegalArgumentException.class,
                 () -> new LevelLayout(3, 3, new GridPoint2(1, 1), asList(new GridPoint2(0, 0), new GridPoint2(1, 1))));
+    }
+
+    @Test
+    void hasNoEnemyTanksUnlessTheyAreGiven() {
+        LevelLayout layout = new LevelLayout(3, 3, new GridPoint2(1, 1), emptyList());
+
+        assertTrue(layout.getEnemyTankCoordinates().isEmpty());
+    }
+
+    @Test
+    void addsEnemyTanksWithoutChangingTheOriginalLayout() {
+        LevelLayout layout = new LevelLayout(3, 3, new GridPoint2(1, 1), singletonList(new GridPoint2(0, 0)));
+
+        LevelLayout withTanks = layout.withEnemyTanks(asList(new GridPoint2(2, 2), new GridPoint2(2, 0)));
+
+        assertEquals(asList(new GridPoint2(2, 2), new GridPoint2(2, 0)), withTanks.getEnemyTankCoordinates());
+        assertEquals(new GridPoint2(1, 1), withTanks.getPlayerStart());
+        assertEquals(singletonList(new GridPoint2(0, 0)), withTanks.getTreeCoordinates());
+        assertTrue(layout.getEnemyTankCoordinates().isEmpty());
+    }
+
+    @Test
+    void rejectsEnemyTankOnAnyTakenCellOrOutside() {
+        LevelLayout layout = new LevelLayout(3, 3, new GridPoint2(1, 1), singletonList(new GridPoint2(0, 0)));
+
+        assertThrows(IllegalArgumentException.class, () -> layout.withEnemyTanks(singletonList(new GridPoint2(1, 1))));
+        assertThrows(IllegalArgumentException.class, () -> layout.withEnemyTanks(singletonList(new GridPoint2(0, 0))));
+        assertThrows(IllegalArgumentException.class, () -> layout.withEnemyTanks(asList(new GridPoint2(2, 2), new GridPoint2(2, 2))));
+        assertThrows(IllegalArgumentException.class, () -> layout.withEnemyTanks(singletonList(new GridPoint2(3, 0))));
+    }
+
+    @Test
+    void freeCellsAreTheOnesWithoutAnyObject() {
+        LevelLayout layout = new LevelLayout(2, 2, new GridPoint2(0, 0), singletonList(new GridPoint2(1, 1)))
+                .withEnemyTanks(singletonList(new GridPoint2(1, 0)));
+
+        assertEquals(singletonList(new GridPoint2(0, 1)), layout.getFreeCells());
+    }
+
+    @Test
+    void enemyTankCoordinatesCannotBeSpoiledFromOutside() {
+        LevelLayout layout = new LevelLayout(3, 3, new GridPoint2(1, 1), emptyList())
+                .withEnemyTanks(singletonList(new GridPoint2(2, 2)));
+
+        layout.getEnemyTankCoordinates().get(0).set(0, 0);
+        layout.getEnemyTankCoordinates().clear();
+
+        assertEquals(singletonList(new GridPoint2(2, 2)), layout.getEnemyTankCoordinates());
     }
 }
