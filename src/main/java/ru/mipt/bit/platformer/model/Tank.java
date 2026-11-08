@@ -2,12 +2,13 @@ package ru.mipt.bit.platformer.model;
 
 import com.badlogic.gdx.math.GridPoint2;
 
-public class Tank implements Movable, Shooter {
+public class Tank implements Movable, Shooter, Destructible {
 
     private final float secondsPerTile;
     private final Gun gun;
     private final GridPoint2 coordinates;
     private final GridPoint2 destinationCoordinates;
+    private final int maxHealth;
     private Direction direction;
     private float movementProgress = 1f;
     private int health;
@@ -25,6 +26,7 @@ public class Tank implements Movable, Shooter {
         this.destinationCoordinates = new GridPoint2(coordinates);
         this.direction = direction;
         this.health = health;
+        this.maxHealth = health;
     }
 
     @Override
@@ -79,8 +81,14 @@ public class Tank implements Movable, Shooter {
         return movementProgress < 1f;
     }
 
+    @Override
     public int getHealth() {
         return health;
+    }
+
+    @Override
+    public int getMaxHealth() {
+        return maxHealth;
     }
 
     @Override
