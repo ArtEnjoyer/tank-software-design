@@ -1,5 +1,6 @@
 package ru.mipt.bit.platformer.input;
 
+import ru.mipt.bit.platformer.Command;
 import ru.mipt.bit.platformer.InputController;
 
 import java.util.ArrayList;
@@ -14,9 +15,11 @@ public class CompositeInputController implements InputController {
     }
 
     @Override
-    public void handleInput() {
+    public List<Command> createCommands() {
+        List<Command> commands = new ArrayList<>();
         for (InputController controller : new ArrayList<>(controllers)) {
-            controller.handleInput();
+            commands.addAll(controller.createCommands());
         }
+        return commands;
     }
 }

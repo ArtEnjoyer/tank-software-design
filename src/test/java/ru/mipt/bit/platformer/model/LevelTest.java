@@ -3,6 +3,11 @@ package ru.mipt.bit.platformer.model;
 import com.badlogic.gdx.math.GridPoint2;
 import org.junit.jupiter.api.Test;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import static java.util.Arrays.asList;
+import static java.util.Collections.singletonList;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -38,21 +43,55 @@ class LevelTest {
         }
     }
 
-    private static class Shooter extends Brick {
+    private static class Spawner extends Brick {
 
         private final Level level;
-        private final Brick bullet;
+        private final Brick spawned;
 
-        Shooter(GridPoint2 coordinates, Level level, Brick bullet) {
+        Spawner(GridPoint2 coordinates, Level level, Brick spawned) {
             super(coordinates);
             this.level = level;
-            this.bullet = bullet;
+            this.spawned = spawned;
         }
 
         @Override
         public void update(float deltaTime) {
             super.update(deltaTime);
-            level.add(bullet);
+            level.add(spawned);
+        }
+    }
+
+    private static class SelfRemover extends Brick {
+
+        private final Level level;
+        private final Brick victim;
+
+        SelfRemover(GridPoint2 coordinates, Level level, Brick victim) {
+            super(coordinates);
+            this.level = level;
+            this.victim = victim;
+        }
+
+        @Override
+        public void update(float deltaTime) {
+            super.update(deltaTime);
+            level.remove(victim);
+            level.remove(this);
+        }
+    }
+
+    private static class RecordingListener implements LevelListener {
+
+        private final List<String> events = new ArrayList<>();
+
+        @Override
+        public void onObjectAdded(GameObject object) {
+            events.add("added " + object.getCoordinates());
+        }
+
+        @Override
+        public void onObjectRemoved(GameObject object) {
+            events.add("removed " + object.getCoordinates());
         }
     }
 
@@ -62,7 +101,7 @@ class LevelTest {
     private final Level level = new Level(WIDTH, HEIGHT);
 
     private static Tank tankAt(int x, int y) {
-        return new Tank(new GridPoint2(x, y), Direction.RIGHT, TIME_TO_PASS_A_TILE);
+        return TestTanks.tankAt(x, y);
     }
 
     @Test
@@ -118,7 +157,7 @@ class LevelTest {
     @Test
     void objectMayAddAnotherObjectWhileBeingUpdated() {
         Brick bullet = new Brick(new GridPoint2(2, 1));
-        level.add(new Shooter(new GridPoint2(1, 1), level, bullet));
+        level.add(new Spawner(new GridPoint2(1, 1), level, bullet));
 
         assertDoesNotThrow(() -> level.update(0.5f));
 
@@ -245,5 +284,109 @@ class LevelTest {
     void cannotBeCreatedWithNonPositiveSize() {
         assertThrows(IllegalArgumentException.class, () -> new Level(0, 8));
         assertThrows(IllegalArgumentException.class, () -> new Level(10, -1));
+    }
+
+    @Test
+    void tellsSubscribersAboutEveryAddedObject() {
+        RecordingListener listener = new RecordingListener();
+        level.subscribe(listener);
+
+        level.add(new Tree(new GridPoint2(1, 3)));
+        level.add(tankAt(2, 2));
+
+        assertEquals(asList("added (1, 3)", "added (2, 2)"), listener.events);
+    }
+
+    @Test
+    void tellsSubscribersAboutRemovedObjects() {
+        RecordingListener listener = new RecordingListener();
+        Tree tree = new Tree(new GridPoint2(1, 3));
+        level.add(tree);
+        level.subscribe(listener);
+
+        level.remove(tree);
+
+        assertEquals(singletonList("removed (1, 3)"), listener.events);
+        assertTrue(level.isFree(new GridPoint2(1, 3)));
+    }
+
+    @Test
+    void removingAnObjectTwiceNotifiesOnlyOnce() {
+        RecordingListener listener = new RecordingListener();
+        Tree tree = new Tree(new GridPoint2(1, 3));
+        level.add(tree);
+        level.subscribe(listener);
+
+        level.remove(tree);
+        level.remove(tree);
+        level.remove(new Tree(new GridPoint2(5, 5)));
+
+        assertEquals(singletonList("removed (1, 3)"), listener.events);
+    }
+
+    @Test
+    void everySubscriberIsNotified() {
+        RecordingListener first = new RecordingListener();
+        RecordingListener second = new RecordingListener();
+        level.subscribe(first);
+        level.subscribe(second);
+
+        level.add(new Tree(new GridPoint2(0, 0)));
+
+        assertEquals(singletonList("added (0, 0)"), first.events);
+        assertEquals(singletonList("added (0, 0)"), second.events);
+    }
+
+    @Test
+    void unsubscribedListenerHearsNothing() {
+        RecordingListener listener = new RecordingListener();
+        level.subscribe(listener);
+        level.unsubscribe(listener);
+
+        level.add(new Tree(new GridPoint2(0, 0)));
+
+        assertTrue(listener.events.isEmpty());
+    }
+
+    @Test
+    void objectsAddedBeforeSubscriptionAreNotRepeated() {
+        level.add(new Tree(new GridPoint2(0, 0)));
+        RecordingListener listener = new RecordingListener();
+        level.subscribe(listener);
+
+        level.add(new Tree(new GridPoint2(1, 0)));
+
+        assertEquals(singletonList("added (1, 0)"), listener.events);
+    }
+
+    @Test
+    void objectRemovedDuringUpdateIsNotUpdatedAnymore() {
+        Brick victim = new Brick(new GridPoint2(5, 5));
+        level.add(new SelfRemover(new GridPoint2(1, 1), level, victim));
+        level.add(victim);
+
+        level.update(1f);
+        level.update(1f);
+
+        assertEquals(0f, victim.timeLived, 1e-6f);
+        assertTrue(level.isFree(new GridPoint2(5, 5)));
+        assertTrue(level.isFree(new GridPoint2(1, 1)));
+    }
+
+    @Test
+    void findsTheObjectStandingOnATile() {
+        Tree tree = new Tree(new GridPoint2(1, 3));
+        level.add(tree);
+
+        assertEquals(tree, level.objectAt(new GridPoint2(1, 3)).orElse(null));
+        assertFalse(level.objectAt(new GridPoint2(2, 3)).isPresent());
+    }
+
+    @Test
+    void knowsItsBorders() {
+        assertTrue(level.isInside(new GridPoint2(0, 0)));
+        assertTrue(level.isInside(new GridPoint2(WIDTH - 1, HEIGHT - 1)));
+        assertFalse(level.isInside(new GridPoint2(WIDTH, 0)));
+        assertFalse(level.isInside(new GridPoint2(0, -1)));
     }
 }

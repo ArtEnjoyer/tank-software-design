@@ -3,7 +3,9 @@ package ru.mipt.bit.platformer.input;
 import ru.mipt.bit.platformer.Command;
 import ru.mipt.bit.platformer.InputController;
 
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 public class KeyboardInputController implements InputController {
@@ -17,11 +19,13 @@ public class KeyboardInputController implements InputController {
     }
 
     @Override
-    public void handleInput() {
+    public List<Command> createCommands() {
+        List<Command> commands = new ArrayList<>();
         for (Map.Entry<Integer, Command> binding : commandByKey.entrySet()) {
             if (keyboard.isKeyPressed(binding.getKey())) {
-                binding.getValue().execute();
+                commands.add(binding.getValue());
             }
         }
+        return commands;
     }
 }

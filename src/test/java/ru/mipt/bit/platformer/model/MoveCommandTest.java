@@ -5,14 +5,15 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static ru.mipt.bit.platformer.model.TestTanks.TIME_TO_PASS_A_TILE;
+import static ru.mipt.bit.platformer.model.TestTanks.tankAt;
 
 class MoveCommandTest {
 
-    private static final float TIME_TO_PASS_A_TILE = 0.4f;
     private static final GameField FREE_FIELD = coordinates -> true;
     private static final GameField OCCUPIED_FIELD = coordinates -> false;
 
-    private final Tank tank = new Tank(new GridPoint2(1, 1), Direction.RIGHT, TIME_TO_PASS_A_TILE);
+    private final Tank tank = tankAt(1, 1);
 
     @Test
     void sendsObjectToTheGivenDirection() {

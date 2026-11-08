@@ -1,57 +1,51 @@
 package ru.mipt.bit.platformer.input;
 
 import org.junit.jupiter.api.Test;
+import ru.mipt.bit.platformer.Command;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Collections;
 
 import static java.util.Arrays.asList;
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static java.util.Collections.singletonList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class CompositeInputControllerTest {
 
-    private final List<String> calls = new ArrayList<>();
     private final CompositeInputController composite = new CompositeInputController();
+    private final Command playerMove = () -> { };
+    private final Command playerShoot = () -> { };
+    private final Command enemyMove = () -> { };
 
     @Test
-    void doesNothingWithoutControllers() {
-        assertDoesNotThrow(composite::handleInput);
+    void createsNothingWithoutControllers() {
+        assertTrue(composite.createCommands().isEmpty());
     }
 
     @Test
-    void asksEveryControllerInTheOrderTheyWereAdded() {
-        composite.add(() -> calls.add("player"));
-        composite.add(() -> calls.add("enemy 1"));
-        composite.add(() -> calls.add("enemy 2"));
+    void collectsCommandsOfEveryControllerInTheOrderTheyWereAdded() {
+        composite.add(() -> asList(playerShoot, playerMove));
+        composite.add(() -> singletonList(enemyMove));
 
-        composite.handleInput();
-
-        assertEquals(asList("player", "enemy 1", "enemy 2"), calls);
+        assertEquals(asList(playerShoot, playerMove, enemyMove), composite.createCommands());
     }
 
     @Test
-    void asksControllersOnEveryTurn() {
-        composite.add(() -> calls.add("player"));
+    void skipsControllersWithNothingToDo() {
+        composite.add(Collections::emptyList);
+        composite.add(() -> singletonList(enemyMove));
 
-        composite.handleInput();
-        composite.handleInput();
-
-        assertEquals(asList("player", "player"), calls);
+        assertEquals(singletonList(enemyMove), composite.createCommands());
     }
 
     @Test
-    void controllerAddedDuringTurnStartsOnTheNextTurn() {
+    void controllerAddedWhileCreatingCommandsStartsOnTheNextTurn() {
         composite.add(() -> {
-            calls.add("spawner");
-            composite.add(() -> calls.add("newcomer"));
+            composite.add(() -> singletonList(enemyMove));
+            return singletonList(playerMove);
         });
 
-        composite.handleInput();
-        assertEquals(asList("spawner"), calls);
-
-        calls.clear();
-        composite.handleInput();
-        assertEquals(asList("spawner", "newcomer"), calls);
+        assertEquals(singletonList(playerMove), composite.createCommands());
+        assertEquals(asList(playerMove, enemyMove), composite.createCommands());
     }
 }

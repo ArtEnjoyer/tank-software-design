@@ -12,4 +12,11 @@ public interface GameObject extends Updatable {
     @Override
     default void update(float deltaTime) {
     }
+
+    default void takeDamage(int damage) {
+    }
+
+    default boolean isAlive() {
+        return true;
+    }
 }
