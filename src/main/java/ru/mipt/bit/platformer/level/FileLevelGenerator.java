@@ -9,7 +9,13 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * Выходной адаптер инфраструктуры (infrastructure) для порта {@link LevelGenerator}.
+ * Читает текстовое описание уровня из ресурса в пути классов и передаёт строки
+ * в {@link LevelParser}. Скрывает доступ к файлу от потребителя раскладки.
+ */
 public class FileLevelGenerator implements LevelGenerator {
+
 
     private final String levelFile;
     private final LevelParser parser = new LevelParser();

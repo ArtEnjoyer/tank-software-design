@@ -2,6 +2,10 @@ package ru.mipt.bit.platformer.model;
 
 import com.badlogic.gdx.math.GridPoint2;
 
+/**
+ * Доменная сущность (domain): неподвижное препятствие, занимающее клетку.
+ * Отрисовка дерева реализована отдельно в инфраструктуре.
+ */
 public class Tree implements GameObject {
 
     private final GridPoint2 coordinates;

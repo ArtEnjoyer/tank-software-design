@@ -6,6 +6,11 @@ import com.badlogic.gdx.utils.Disposable;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Управление ресурсами графического адаптера, слой инфраструктуры (infrastructure).
+ * Загружает, кеширует и освобождает текстуры libGDX.
+ * Не является самостоятельным портом: используется только внутри инфраструктуры.
+ */
 public class Textures implements Disposable {
 
     private final Map<String, Texture> textureByPath = new HashMap<>();

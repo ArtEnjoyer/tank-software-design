@@ -1,7 +1,19 @@
 package ru.mipt.bit.platformer.model;
 
 import com.badlogic.gdx.math.GridPoint2;
+import ru.mipt.bit.platformer.model.state.HealthBasedTankStateResolver;
+import ru.mipt.bit.platformer.model.state.TankState;
+import ru.mipt.bit.platformer.model.state.TankStateResolver;
 
+import java.util.Objects;
+
+
+/**
+ * Доменная сущность (domain): движение, здоровье и стрельба танка.
+ * Делегирует зависящее от состояния поведение контракту {@code TankState},
+ * а выбор состояния по здоровью — доменной политике {@code TankStateResolver}.
+ * Не является адаптером; графика и устройства ввода в правилах танка не участвуют.
+ */
 public class Tank implements Movable, Shooter, Destructible {
 
     private final float secondsPerTile;
@@ -9,11 +21,18 @@ public class Tank implements Movable, Shooter, Destructible {
     private final GridPoint2 coordinates;
     private final GridPoint2 destinationCoordinates;
     private final int maxHealth;
+    private final TankStateResolver stateResolver;
     private Direction direction;
     private float movementProgress = 1f;
     private int health;
+    private TankState state;
 
     public Tank(GridPoint2 coordinates, Direction direction, float secondsPerTile, int health, Gun gun) {
+        this(coordinates, direction, secondsPerTile, health, gun, HealthBasedTankStateResolver.defaultDamageStates());
+    }
+
+    public Tank(GridPoint2 coordinates, Direction direction, float secondsPerTile, int health, Gun gun,
+                TankStateResolver stateResolver) {
         if (secondsPerTile <= 0f) {
             throw new IllegalArgumentException("Seconds per tile must be positive");
         }
@@ -27,6 +46,8 @@ public class Tank implements Movable, Shooter, Destructible {
         this.direction = direction;
         this.health = health;
         this.maxHealth = health;
+        this.stateResolver = stateResolver;
+        this.state = stateResolver.resolve(healthFraction());
     }
 
     @Override
@@ -44,7 +65,7 @@ public class Tank implements Movable, Shooter, Destructible {
 
     @Override
     public void shoot(Battlefield field) {
-        if (!isAlive() || isMoving()) {
+        if (!isAlive() || isMoving() || !state.canShoot()) {
             return;
         }
         gun.fire(coordinates, direction, field);
@@ -56,7 +77,8 @@ public class Tank implements Movable, Shooter, Destructible {
         if (!isMoving()) {
             return;
         }
-        movementProgress = Math.min(1f, movementProgress + deltaTime / secondsPerTile);
+        float movementDuration = secondsPerTile * state.movementDurationMultiplier();
+        movementProgress = Math.min(1f, movementProgress + deltaTime / movementDuration);
         if (!isMoving()) {
             coordinates.set(destinationCoordinates);
         }
@@ -65,7 +87,33 @@ public class Tank implements Movable, Shooter, Destructible {
     @Override
     public void takeDamage(int damage) {
         health -= damage;
+        refreshStateFromHealth();
     }
+
+    public void changeState(TankState state) {
+        this.state = Objects.requireNonNull(state);
+    }
+
+
+    public void refreshStateFromHealth() {
+        state = stateResolver.resolve(healthFraction());
+    }
+
+    public TankState getState() {
+        return state;
+    }
+
+    public float getHealthFraction() {
+        if (health <= 0) {
+            return 0f;
+        }
+        return (float) health / (float) maxHealth;
+    }
+
+    private float healthFraction() {
+        return getHealthFraction();
+    }
+
 
     @Override
     public boolean isAlive() {

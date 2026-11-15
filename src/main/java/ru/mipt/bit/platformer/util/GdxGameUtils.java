@@ -17,6 +17,11 @@ import java.util.NoSuchElementException;
 
 import static com.badlogic.gdx.math.MathUtils.clamp;
 
+/**
+ * Вспомогательные функции графического адаптера, слой инфраструктуры (infrastructure).
+ * Работают с картами, текстурами и геометрией libGDX.
+ * Не должны использоваться правилами доменной модели.
+ */
 public final class GdxGameUtils {
 
     private GdxGameUtils() {

@@ -10,7 +10,14 @@ import ru.mipt.bit.platformer.model.LevelListener;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+/**
+ * Выходной адаптер инфраструктуры (infrastructure).
+ * Реализует порты {@code Renderer} и {@code LevelListener}: рисует уровень
+ * средствами libGDX и синхронизирует представления с событиями доменной модели.
+ * Приложение и модель не зависят от этого класса.
+ */
 public class LevelGraphics implements Renderer, LevelListener {
+
 
     private final TiledMap tiledMap;
     private final MapRenderer tiledMapRenderer;

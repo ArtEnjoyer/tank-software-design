@@ -2,6 +2,13 @@ package ru.mipt.bit.platformer;
 
 import java.util.List;
 
+/**
+ * Слой приложения (application): координирует игровой цикл.
+ * Получает команды через {@link InputController}, выполняет их, обновляет мир
+ * через {@link Updatable} и вызывает выходной порт {@link Renderer}.
+ * Входные операции пока доступны непосредственно через этот класс: для отделения
+ * настольного запуска от реализации приложения можно выделить интерфейс игрового цикла.
+ */
 public class Game {
 
     private final InputController inputController;

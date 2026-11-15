@@ -7,6 +7,11 @@ import com.badlogic.gdx.math.Rectangle;
 
 import static ru.mipt.bit.platformer.util.GdxGameUtils.moveRectangleAtTileCenter;
 
+/**
+ * Преобразователь координат в графическом адаптере, слой инфраструктуры (infrastructure).
+ * Интерполирует экранное положение между центрами клеток карты libGDX.
+ * Не определяет доменную скорость и не изменяет координаты игрового объекта.
+ */
 public class TileMovement {
 
     private final TiledMapTileLayer tileLayer;

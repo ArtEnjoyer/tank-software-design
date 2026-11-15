@@ -7,6 +7,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Доменная сущность (domain): игровой мир с объектами и границами поля.
+ * Реализует внутренние контракты {@link Battlefield} и {@code Updatable},
+ * проверяет занятость клеток и обновляет объекты.
+ * О внешних представлениях сообщает через выходной порт {@link LevelListener};
+ * сам инфраструктурным адаптером не является.
+ */
 public class Level implements Battlefield, Updatable {
 
     private final int width;

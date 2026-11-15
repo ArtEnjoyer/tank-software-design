@@ -8,6 +8,11 @@ import ru.mipt.bit.platformer.model.Destructible;
 import ru.mipt.bit.platformer.model.MovingObject;
 import ru.mipt.bit.platformer.util.TileMovement;
 
+/**
+ * Декоратор графического адаптера, слой инфраструктуры (infrastructure).
+ * Добавляет полосу здоровья по данным доменных интерфейсов.
+ * Не рассчитывает урон и не меняет здоровье объекта.
+ */
 public class HealthBarDecorator extends RenderableDecorator {
 
     private static final float BAR_WIDTH = 80f;

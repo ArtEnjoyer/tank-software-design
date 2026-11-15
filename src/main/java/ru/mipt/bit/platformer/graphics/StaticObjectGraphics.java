@@ -5,6 +5,10 @@ import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import ru.mipt.bit.platformer.model.GameObject;
 
+/**
+ * Представление неподвижного доменного объекта в графическом адаптере.
+ * Слой инфраструктуры (infrastructure): рисует текстуру на клетке объекта.
+ */
 public class StaticObjectGraphics extends GameObjectGraphics {
 
     private static final float NO_ROTATION = 0f;

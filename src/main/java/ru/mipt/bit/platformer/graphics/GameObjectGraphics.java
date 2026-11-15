@@ -12,6 +12,11 @@ import static ru.mipt.bit.platformer.util.GdxGameUtils.createBoundingRectangle;
 import static ru.mipt.bit.platformer.util.GdxGameUtils.drawTextureRegionUnscaled;
 import static ru.mipt.bit.platformer.util.GdxGameUtils.moveRectangleAtTileCenter;
 
+/**
+ * Базовая реализация представления объекта внутри графического адаптера.
+ * Слой инфраструктуры (infrastructure): размещает текстуру на карте libGDX.
+ * Реализует внутренний интерфейс {@link Renderable}, а не порт приложения.
+ */
 public abstract class GameObjectGraphics implements Renderable {
 
     private final TextureRegion region;

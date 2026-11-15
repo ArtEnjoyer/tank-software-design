@@ -1,5 +1,9 @@
 package ru.mipt.bit.platformer.graphics;
 
+/**
+ * Состояние представления в слое инфраструктуры (infrastructure).
+ * Хранит видимость визуального элемента; к игровым сущностям (domain) не относится.
+ */
 public class VisibilityToggle {
 
     private boolean visible;
