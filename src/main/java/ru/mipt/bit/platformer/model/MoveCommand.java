@@ -2,6 +2,11 @@ package ru.mipt.bit.platformer.model;
 
 import ru.mipt.bit.platformer.Command;
 
+/**
+ * Сценарий слоя приложения (application), физически расположенный в model.
+ * Реализует {@code Command} и передаёт запрос движения доменному {@link Movable}.
+ * Правила доступности клетки остаются в domain; команда не является адаптером ввода.
+ */
 public class MoveCommand implements Command {
 
     private final Movable movable;

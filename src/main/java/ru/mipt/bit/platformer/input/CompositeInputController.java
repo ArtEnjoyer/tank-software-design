@@ -6,7 +6,13 @@ import ru.mipt.bit.platformer.InputController;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Составная реализация выходного порта {@code InputController}.
+ * Объединяет команды нескольких источников в один список, сохраняя их порядок.
+ * Инфраструктурная композиция адаптеров ввода; нового внешнего канала не добавляет.
+ */
 public class CompositeInputController implements InputController {
+
 
     private final List<InputController> controllers = new ArrayList<>();
 

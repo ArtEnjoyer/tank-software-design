@@ -5,6 +5,11 @@ import com.badlogic.gdx.math.GridPoint2;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Вспомогательный преобразователь инфраструктуры (infrastructure).
+ * Разбирает внешний текстовый формат уровня в {@link LevelLayout}.
+ * Является частью файлового адаптера; отдельного архитектурного порта не реализует.
+ */
 public class LevelParser {
 
     private static final char TREE = 'T';

@@ -9,7 +9,14 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 
+/**
+ * Адаптер источника команд: реализует выходной порт {@code InputController},
+ * выбирая случайную команду для противника. Относится к периферии приложения
+ * (infrastructure в принятом здесь разделении); не содержит правил движения или стрельбы.
+ * Опрашивается игровым циклом и сам не запускает сценарии игры.
+ */
 public class RandomAiController implements InputController {
+
 
     private final List<Command> commands;
     private final Random random;

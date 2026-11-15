@@ -4,6 +4,11 @@ import com.badlogic.gdx.math.GridPoint2;
 
 import java.util.Optional;
 
+/**
+ * Доменная сущность (domain): движение пули, столкновения и нанесение урона.
+ * Взаимодействует с миром через внутренний контракт {@link Battlefield}.
+ * Не является графическим объектом или инфраструктурным адаптером.
+ */
 public class Bullet implements MovingObject {
 
     private final Direction direction;

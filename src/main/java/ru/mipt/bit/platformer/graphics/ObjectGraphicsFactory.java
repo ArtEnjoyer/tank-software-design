@@ -6,7 +6,13 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
+/**
+ * Фабрика внутри графического адаптера, слой инфраструктуры (infrastructure).
+ * Сопоставляет типам доменных объектов способы создания {@link Renderable}.
+ * Поддерживает адаптацию модели к представлению, но сама порт ядра не реализует.
+ */
 public class ObjectGraphicsFactory {
+
 
     private final Map<Class<?>, Function<GameObject, Renderable>> creatorByType = new HashMap<>();
 

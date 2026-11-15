@@ -16,6 +16,13 @@ import java.util.Random;
 
 import static com.badlogic.gdx.graphics.GL20.GL_COLOR_BUFFER_BIT;
 
+/**
+ * Входной адаптер инфраструктуры (infrastructure) для настольного приложения.
+ * Преобразует события жизненного цикла libGDX в вызовы {@code Game} и передаёт
+ * игровое время. Также содержит точку входа и выбирает источник уровня.
+ * Пока зависит от конкретного {@code Game}; отдельный входной порт игрового цикла
+ * позволил бы заменить реализацию приложения независимо от этого адаптера.
+ */
 public class GameDesktopLauncher implements ApplicationListener {
 
     private static final String LEVEL_FILE = "level.txt";

@@ -6,6 +6,11 @@ import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import ru.mipt.bit.platformer.model.MovingObject;
 import ru.mipt.bit.platformer.util.TileMovement;
 
+/**
+ * Представление движущегося доменного объекта в графическом адаптере.
+ * Слой инфраструктуры (infrastructure): преобразует состояние модели
+ * в положение и поворот текстуры, не изменяя правила движения.
+ */
 public class MovableGraphics extends GameObjectGraphics {
 
     private final MovingObject object;

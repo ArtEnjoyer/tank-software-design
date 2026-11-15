@@ -7,6 +7,12 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 
+/**
+ * Процедурная реализация выходного порта {@link LevelGenerator}.
+ * Поставляет раскладку со случайным размещением деревьев и игрока.
+ * В текущей сборке играет роль адаптера источника уровня на периферии приложения;
+ * сам алгоритм генерации не требует внешнего ввода-вывода.
+ */
 public class RandomLevelGenerator implements LevelGenerator {
 
     private final int treeCount;

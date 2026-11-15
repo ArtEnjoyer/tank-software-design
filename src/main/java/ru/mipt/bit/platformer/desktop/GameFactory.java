@@ -55,6 +55,14 @@ import static java.util.Collections.singletonMap;
 import static ru.mipt.bit.platformer.util.GdxGameUtils.createSingleLayerMapRenderer;
 import static ru.mipt.bit.platformer.util.GdxGameUtils.getSingleLayer;
 
+/**
+ * Корень сборки зависимостей в слое инфраструктуры (infrastructure).
+ * Создаёт доменные объекты, команды приложения и адаптеры libGDX, связывает их
+ * через порты. Знание конкретных реализаций здесь ожидаемо.
+ * Однако создание игрового сеанса смешано с загрузкой TMX: размеры игрового поля
+ * получаются из графической карты. Для разделения нужен сценарий создания сеанса
+ * в application и порт загрузки описания поля с адаптером TMX.
+ */
 public class GameFactory {
 
     private static final String LEVEL_MAP = "level.tmx";

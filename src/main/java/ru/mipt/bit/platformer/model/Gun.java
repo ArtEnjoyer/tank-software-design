@@ -2,6 +2,11 @@ package ru.mipt.bit.platformer.model;
 
 import com.badlogic.gdx.math.GridPoint2;
 
+/**
+ * Доменный объект (domain): правила перезарядки и создания выстрела.
+ * Работает с игровым временем и внутренним контрактом {@link Battlefield},
+ * не зависит от реальных часов, ввода или отрисовки.
+ */
 public class Gun {
 
     private final float bulletSecondsPerTile;

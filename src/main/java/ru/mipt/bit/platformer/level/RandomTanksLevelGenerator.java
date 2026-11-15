@@ -6,7 +6,14 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 
+/**
+ * Декоратор реализации выходного порта {@link LevelGenerator}.
+ * Дополняет раскладку другого генератора танками на свободных клетках.
+ * Часть композиции адаптеров источника уровня на периферии приложения;
+ * не вводит отдельный архитектурный порт.
+ */
 public class RandomTanksLevelGenerator implements LevelGenerator {
+
 
     private final LevelGenerator levelGenerator;
     private final int tankCount;

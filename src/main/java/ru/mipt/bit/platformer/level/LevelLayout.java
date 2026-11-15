@@ -9,6 +9,12 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+/**
+ * Данные раскладки уровня и доменные ограничения размещения (domain).
+ * Проверяет границы поля и отсутствие пересечений начальных позиций.
+ * Передаётся через порт {@link LevelGenerator}; не является адаптером.
+ * Использование {@code GridPoint2} из libGDX пока связывает эти данные с библиотекой.
+ */
 public final class LevelLayout {
 
     private final int width;
