@@ -2,8 +2,11 @@ package ru.mipt.bit.platformer.model.state;
 
 import com.badlogic.gdx.math.GridPoint2;
 import org.junit.jupiter.api.Test;
+import ru.mipt.bit.platformer.model.Bullet;
 import ru.mipt.bit.platformer.model.Direction;
 import ru.mipt.bit.platformer.model.GameField;
+import ru.mipt.bit.platformer.model.GameObject;
+import ru.mipt.bit.platformer.model.Gun;
 import ru.mipt.bit.platformer.model.Level;
 import ru.mipt.bit.platformer.model.Tank;
 
@@ -23,6 +26,7 @@ import static ru.mipt.bit.platformer.model.TestTanks.tankAt;
 class TankStateTest {
 
     private static final GameField FREE_FIELD = coordinates -> true;
+    private static final GridPoint2 SHOT_TILE = new GridPoint2(2, 1);
 
     @Test
     void startsInLightStateAtFullHealth() {
@@ -127,6 +131,98 @@ class TankStateTest {
     }
 
     @Test
+    void boostedTankCanFireEveryHalfSecondButNotEarlier() {
+        Tank tank = tankWithOneSecondReload();
+        Level level = new Level(10, 8);
+        tank.changeState(BoostedTankState.INSTANCE);
+        fireAndRemoveBullet(tank, level);
+
+        tank.update(0.25f);
+        assertCannotFire(tank, level);
+        tank.update(0.25f);
+        fireAndRemoveBullet(tank, level);
+        assertCannotFire(tank, level);
+
+        tank.update(0.5f);
+        fireAndRemoveBullet(tank, level);
+    }
+
+    @Test
+    void lightAndMediumStatesKeepTheOriginalReloadTime() {
+        for (TankState state : Arrays.asList(LightTankState.INSTANCE, MediumTankState.INSTANCE)) {
+            Tank tank = tankWithOneSecondReload();
+            Level level = new Level(10, 8);
+            tank.changeState(state);
+            fireAndRemoveBullet(tank, level);
+
+            tank.update(0.5f);
+            assertCannotFire(tank, level);
+            tank.update(0.5f);
+            fireAndRemoveBullet(tank, level);
+        }
+    }
+
+    @Test
+    void activatingBoosterPreservesCompletedReloadProgress() {
+        Tank tank = tankWithOneSecondReload();
+        Level level = new Level(10, 8);
+        fireAndRemoveBullet(tank, level);
+        tank.update(0.25f);
+
+        tank.changeState(BoostedTankState.INSTANCE);
+
+        assertCannotFire(tank, level);
+        tank.update(0.25f);
+        assertCannotFire(tank, level);
+        tank.update(0.125f);
+        fireAndRemoveBullet(tank, level);
+    }
+
+    @Test
+    void endingBoosterPreservesCompletedReloadProgress() {
+        Tank tank = tankWithOneSecondReload();
+        Level level = new Level(10, 8);
+        tank.changeState(BoostedTankState.INSTANCE);
+        fireAndRemoveBullet(tank, level);
+        tank.update(0.25f);
+
+        tank.refreshStateFromHealth();
+
+        assertCannotFire(tank, level);
+        tank.update(0.25f);
+        assertCannotFire(tank, level);
+        tank.update(0.25f);
+        fireAndRemoveBullet(tank, level);
+    }
+
+    @Test
+    void endingBoosterDoesNotUnloadAnAlreadyReloadedGun() {
+        Tank tank = tankWithOneSecondReload();
+        Level level = new Level(10, 8);
+        tank.changeState(BoostedTankState.INSTANCE);
+        fireAndRemoveBullet(tank, level);
+        tank.update(0.5f);
+
+        tank.refreshStateFromHealth();
+
+        fireAndRemoveBullet(tank, level);
+    }
+
+    @Test
+    void healthRangeStateDelegatesReloadSpeedFromTheInitialResolver() {
+        TankState boostedRange = new HealthRangeTankState(0f, true, 1f, true, BoostedTankState.INSTANCE);
+        Tank tank = new Tank(new GridPoint2(1, 1), Direction.RIGHT, TIME_TO_PASS_A_TILE,
+                HEALTH, new Gun(0.1f, 25, 1f), healthFraction -> boostedRange);
+        Level level = new Level(10, 8);
+        fireAndRemoveBullet(tank, level);
+
+        tank.update(0.25f);
+        assertCannotFire(tank, level);
+        tank.update(0.25f);
+        fireAndRemoveBullet(tank, level);
+    }
+
+    @Test
     void staysLightJustAboveSeventyPercent() {
         Tank tank = new Tank(new GridPoint2(1, 1), Direction.RIGHT, TIME_TO_PASS_A_TILE, 100, readyGun());
 
@@ -154,6 +250,23 @@ class TankStateTest {
 
         assertEquals(89, tank.getHealth());
         assertSame(MediumTankState.INSTANCE, tank.getState());
+    }
+
+    private static Tank tankWithOneSecondReload() {
+        return new Tank(new GridPoint2(1, 1), Direction.RIGHT, TIME_TO_PASS_A_TILE,
+                HEALTH, new Gun(0.1f, 25, 1f));
+    }
+
+    private static void fireAndRemoveBullet(Tank tank, Level level) {
+        tank.shoot(level);
+        GameObject bullet = level.objectAt(SHOT_TILE).orElse(null);
+        assertTrue(bullet instanceof Bullet);
+        level.remove(bullet);
+    }
+
+    private static void assertCannotFire(Tank tank, Level level) {
+        tank.shoot(level);
+        assertFalse(level.objectAt(SHOT_TILE).isPresent());
     }
 }
 

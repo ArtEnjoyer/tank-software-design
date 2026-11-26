@@ -40,6 +40,11 @@ public final class HealthRangeTankState implements TankState {
     }
 
     @Override
+    public float reloadDurationMultiplier() {
+        return behavior.reloadDurationMultiplier();
+    }
+
+    @Override
     public boolean canShoot() {
         return behavior.canShoot();
     }

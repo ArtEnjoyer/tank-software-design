@@ -60,8 +60,51 @@ class GunTest {
         Gun gun = new Gun(0.1f, 10, 0f);
 
         gun.fire(SHOOTER, Direction.RIGHT, level);
+        gun.update(0f, 0.5f);
+        gun.fire(SHOOTER, Direction.UP, level);
 
         assertTrue(gun.isReady());
+        assertTrue(level.objectAt(new GridPoint2(1, 2)).orElse(null) instanceof Bullet);
+    }
+
+    @Test
+    void reloadMultiplierCanMakeTheGunSlower() {
+        Gun gun = new Gun(0.1f, 10, 1f);
+        gun.fire(SHOOTER, Direction.RIGHT, level);
+
+        gun.update(1f, 2f);
+        gun.fire(SHOOTER, Direction.UP, level);
+
+        assertFalse(gun.isReady());
+        assertFalse(level.objectAt(new GridPoint2(1, 2)).isPresent());
+
+        gun.update(1f, 2f);
+        gun.fire(SHOOTER, Direction.UP, level);
+
+        assertTrue(level.objectAt(new GridPoint2(1, 2)).orElse(null) instanceof Bullet);
+    }
+
+    @Test
+    void idleTimeDoesNotAllowSeveralShotsWithoutReloading() {
+        Gun gun = new Gun(0.1f, 10, 1f);
+        gun.update(10f, 0.5f);
+
+        gun.fire(SHOOTER, Direction.RIGHT, level);
+        gun.fire(SHOOTER, Direction.UP, level);
+
+        assertFalse(gun.isReady());
+        assertFalse(level.objectAt(new GridPoint2(1, 2)).isPresent());
+    }
+
+    @Test
+    void rejectsInvalidReloadMultipliersEvenWithoutReloadTime() {
+        for (float reloadSeconds : new float[]{0f, 1f}) {
+            Gun gun = new Gun(0.1f, 10, reloadSeconds);
+            for (float multiplier : new float[]{0f, -1f, Float.NaN,
+                    Float.NEGATIVE_INFINITY, Float.POSITIVE_INFINITY}) {
+                assertThrows(IllegalArgumentException.class, () -> gun.update(0.1f, multiplier));
+            }
+        }
     }
 
     @Test
