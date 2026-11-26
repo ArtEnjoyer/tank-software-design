@@ -73,7 +73,7 @@ public class Tank implements Movable, Shooter, Destructible {
 
     @Override
     public void update(float deltaTime) {
-        gun.update(deltaTime);
+        gun.update(deltaTime, state.reloadDurationMultiplier());
         if (!isMoving()) {
             return;
         }
